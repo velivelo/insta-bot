@@ -6,6 +6,7 @@ import requests
 from fake_useragent import UserAgent
 import re
 import json
+from functools import wraps
 
 
 class InstaBot ():
@@ -30,6 +31,7 @@ class InstaBot ():
         self.logged = False
 
     def require_loggin (func):
+        @wraps(func)
         def wrapper (*args, **kwargs):
             if not args[0].logged:
                 raise Exception('Method "{}" require the bot to be logged'.format(func.__name__))
