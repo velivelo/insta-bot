@@ -7,6 +7,7 @@ from fake_useragent import UserAgent
 import re
 import json
 from functools import wraps
+import os
 
 
 class InstaBot ():
@@ -21,7 +22,8 @@ class InstaBot ():
         "like": "https://www.instagram.com/web/likes/{}/like/", # media_id
         "unlike": "https://www.instagram.com/web/likes/{}/unlike/", # media_id
         "comment": "https://www.instagram.com/web/comments/{}/add/",  # media_id
-        "remove_comment": "https://www.instagram.com/web/comments/{}/delete/{}/" # media_id, comment_id
+        "remove_comment": "https://www.instagram.com/web/comments/{}/delete/{}/", # media_id, comment_id
+        "media": "https://www.instagram.com/p/{}/", # media shortcode
     }
 
     def __init__ (self, username, password):
@@ -145,7 +147,17 @@ class InstaBot ():
             return [] # no madia with this tag
         return [media["node"] for media in r.json()["graphql"]["hashtag"]["edge_hashtag_to_media"]["edges"]]
 
+    def downloadMedia (self, media_shortcode):
+        """Download a media by its shortcode (not videos)"""
+        r = self.s.get(self.urls["media"].format(media_shortcode))
+        full_details = json.loads(re.search(r"window\._sharedData = (.+);</script>", r.text).group(1))
+        media_url = full_details["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["display_url"]
+        img_data = requests.get(media_url).content
+        os.makedirs("downloads", exist_ok= True)
+        with open("downloads/{}.jpg".format(media_shortcode), "wb") as handler:
+            handler.write(img_data)
+
 
 if __name__ == "__main__":
-    pass 
+    pass
 
