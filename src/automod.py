@@ -111,7 +111,7 @@ def autoMod (follow_duration= 300, # time before unfollowing (0 for infinite)
         
 
 if __name__ == "__main__":
-    bot = InstaBot ("keyzerd", "cerise")
+    bot = InstaBot ("username", "password")
     sys.stdout.write("{} BOT INITIALIZED\n".format(formatedDate()))
     bot.login()
     sys.stdout.write("{} BOT LOGGED\n".format(formatedDate()))
