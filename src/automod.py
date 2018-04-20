@@ -1,5 +1,4 @@
 
-
 from instabot import *
 import sys
 import pickle
@@ -79,6 +78,7 @@ def autoMod (follow_duration= 300, # time before unfollowing (0 for infinite)
                 unfollow_queue[owner_details["id"]] = time.time() + follow_duration
             if log:
                 sys.stdout.write("{} FOLLOW > user : @{}\n".format(formatedDate(), owner_details["username"]))
+            time.sleep(random.uniform(1, 2))
         if like:
             if media["edge_liked_by"]["count"] > max_likes_for_like:
                 continue
@@ -88,6 +88,7 @@ def autoMod (follow_duration= 300, # time before unfollowing (0 for infinite)
                 print(e)
             if log:
                 sys.stdout.write("{} LIKE > media shortcode : {}\n".format(formatedDate(), media["shortcode"]))
+            time.sleep(random.uniform(1, 2))
         if comment:
             if media["comments_disabled"]:
                 continue
@@ -110,7 +111,7 @@ def autoMod (follow_duration= 300, # time before unfollowing (0 for infinite)
         
 
 if __name__ == "__main__":
-    bot = InstaBot ("username", "password")
+    bot = InstaBot ("keyzerd", "cerise")
     sys.stdout.write("{} BOT INITIALIZED\n".format(formatedDate()))
     bot.login()
     sys.stdout.write("{} BOT LOGGED\n".format(formatedDate()))
@@ -122,19 +123,20 @@ if __name__ == "__main__":
     
     killer = GracefulKiller()
     try:
-    
-    
+
+
         autoMod(**{
-            "time_gap": 15,
+            "time_gap": 30,
             "iterations": 10,
             "tags": ["drawing", "draw"],
             "like": True,
             "comment": True,
         })
-        
-        
+
+
     except Exception as e:
         print(e)
     pickle.dump(unfollow_queue, open("{}/unfollow_queue.txt".format(os.path.dirname(__file__)), "wb"))
     sys.stdout.write("{} BOT LOGGED OUT, {} users in unfollow_queue\n".format(formatedDate(), len(unfollow_queue)))
+
 
