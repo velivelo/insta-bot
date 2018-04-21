@@ -124,6 +124,7 @@ if __name__ == "__main__":
         unfollow_queue = {}
     
     killer = GracefulKiller()
+    freezing_time = 2
     for i in range(10):
         try:
 
@@ -136,6 +137,10 @@ if __name__ == "__main__":
 
         except KeyboardInterrupt:
             break
+        except ConnectionResetError:
+            sys.stdout.write("Connection aborted, freezing for {} seconds".format(freezing_time))
+            killer.freezeProgram(freezing_time)
+            freezing_time *= 2
         except Exception as e:
             sys.stdout.write("{}\n".format(e))
         finally: # kind of insurance (for exemple if the computer power goes out)
