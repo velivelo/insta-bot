@@ -53,7 +53,6 @@ def autoMod (self, follow_duration= 300, time_gap= 60, tags= ("default"), unfoll
     comment= False, # comment the media
     comments= (("Super", "Beautiful", "Great"), ("post", "picture"), ("!", "")), # list of comments
     users_blacklist= ("instagram"), # users blacklisted
-
     """
     i = 0
     tag = random.choice(tags)
