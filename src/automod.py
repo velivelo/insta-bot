@@ -1,4 +1,5 @@
 
+
 from instabot import *
 import sys
 import pickle
@@ -32,27 +33,28 @@ def formatedDate ():
 
 
 # All times are exprimed in seconds
-def autoMod (self, follow_duration= 300, time_gap= 60, tags= ("default"), unfollow_if_followed_back= True, unfollow_already_followed= True,
+def autoMod (self, follow_duration= 300, time_gap= 60, tags= ("default"), unfollow_if_followed_back= True, unfollow_already_followed= False,
              follow= True, like= False, max_stack_size= 5, videos= False, max_likes_for_like= 20, max_followers_for_follow= 500,
              only_medias_posted_before_timestamp= 600, comment= False, comments= (("Super", "Beautiful", "Great"), ("post", "picture"), ("!", "")),
-             users_blacklist= ("instagram"),
+             users_blacklist= ("instagram"), comment_ratio= .33,
             ):
     """
-    follow_duration= 300, # time before unfollowing (0 for infinite)
-    time_gap= 60, # time between medias treatment
-    tags= ("default"), # media tags to explore
-    unfollow_if_followed_back= True, # unfollow even if the user has followed back
-    unfollow_already_followed= True, # the bot unfollow people already followed 
-    follow= True, # follow medias owners
-    like= False, # like medias 
-    max_stack_size= 5, # maximum number of medias treated for a tag before recursion
-    videos= False, # take care of videos
-    max_likes_for_like= 20, # max likes a media can have to be liked
-    max_followers_for_follow= 500, # max followers an user can have to be followed
-    only_medias_posted_before_timestamp= 600, # treat only a media if posted before timestamp
-    comment= False, # comment the media
+    follow_duration= 300,                                                        # time before unfollowing (0 for infinite)
+    time_gap= 60,                                                                # time between medias treatment
+    tags= ("default"),                                                           # media tags to explore
+    unfollow_if_followed_back= True,                                             # unfollow even if the user has followed back
+    unfollow_already_followed= False,                                            # can the bot unfollow people already followed 
+    follow= True,                                                                # follow medias owners
+    like= False,                                                                 # like medias 
+    max_stack_size= 5,                                                           # maximum number of medias treated for a tag
+    videos= False,                                                               # take care of videos
+    max_likes_for_like= 20,                                                      # max likes a media can have to be liked
+    max_followers_for_follow= 500,                                               # max followers an user can have to be followed
+    only_medias_posted_before_timestamp= 600,                                    # treat only a media if posted before timestamp
+    comment= False,                                                              # comment the media
     comments= (("Super", "Beautiful", "Great"), ("post", "picture"), ("!", "")), # list of comments
-    users_blacklist= ("instagram"), # users blacklisted
+    users_blacklist= ("instagram"),                                              # users blacklisted
+    comment_ratio= .33,                                                          # probability of posting a comment even if comment set to True
     """
     i = 0
     tag = random.choice(tags)
@@ -94,7 +96,7 @@ def autoMod (self, follow_duration= 300, time_gap= 60, tags= ("default"), unfoll
                 continue
             self.like(media["id"])
             sys.stdout.write("{} LIKE > media shortcode : {}\n".format(formatedDate(), media["shortcode"]))
-        if comment:
+        if comment and random.uniform(0, 1) >= 1 - comment_ratio:
             time.sleep(random.uniform(1, 2))
             if media["comments_disabled"]:
                 continue
@@ -130,7 +132,6 @@ if __name__ == "__main__":
                 "tags": ["drawing", "draw"],
                 "like": True,
                 "comment": True,
-                "max_stack_size": 5,
             })
 
         except KeyboardInterrupt:
@@ -140,5 +141,4 @@ if __name__ == "__main__":
         finally: # kind of insurance (for exemple if the computer power goes out)
             pickle.dump(unfollow_queue, open("{}/unfollow_queue.txt".format(os.path.dirname(__file__)), "wb"))
     sys.stdout.write("{} BOT LOGGED OUT, {} users in unfollow_queue\n".format(formatedDate(), len(unfollow_queue)))
-
 
