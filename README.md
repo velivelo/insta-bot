@@ -75,3 +75,10 @@ autoMod(self, follow_duration=300, time_gap=60, tags='default', unfollow_if_foll
 2. `git clone` this repo or download as a ZIP and extract
 3. Install dependencies `pip install -r requirements.txt`
 
+## Warnings !
+
+These are the approximately Instagram limits. Be worry of respecting them or you'll get a bunch of 403 HTTP errors and might get banned !
+* Maximum of 800 follows / unfollows a day (200-300 for a new account)
+* Maximum of likes a day = 1.5 \* the follow limit
+* Maximum of 250-300 comments a day
+* 1-2 seconds between each request
