@@ -3,7 +3,7 @@ An Insagram bot made with Python and independant from the Instagram API.
 
 ## The bot can
 
-From help(InstaBot) :
+src/instabot.py > From help(InstaBot) :
 ```
 class InstaBot(builtins.object)
  |  Methods defined here:
@@ -49,10 +49,29 @@ class InstaBot(builtins.object)
  |  usernameToUserId(self, username)
  |      From an username to an user id
 ```
-It also has an autoMod function.
+It also has an autoMod function. src/automod.py > From help(InstaBot.autoMod) :
+```
+autoMod(self, follow_duration=300, time_gap=60, tags='default', unfollow_if_followed_back=True, unfollow_already_followed=True, follow=True, like=False, max_stack_size=5, videos=False, max_likes_for_like=20, max_followers_for_follow=500, only_medias_posted_before_timestamp=600, comment=False, comments=(('Super', 'Beautiful', 'Great'), ('post', 'picture'), ('!', '')), users_blacklist='instagram')
+    follow_duration= 300, # time before unfollowing (0 for infinite)
+    time_gap= 60, # time between medias treatment
+    tags= ("default"), # media tags to explore
+    unfollow_if_followed_back= True, # unfollow even if the user has followed back
+    unfollow_already_followed= True, # the bot unfollow people already followed 
+    follow= True, # follow medias owners
+    like= False, # like medias 
+    max_stack_size= 5, # maximum number of medias treated for a tag before recursion
+    videos= False, # take care of videos
+    max_likes_for_like= 20, # max likes a media can have to be liked
+    max_followers_for_follow= 500, # max followers an user can have to be followed
+    only_medias_posted_before_timestamp= 600, # treat only a media if posted before timestamp
+    comment= False, # comment the media
+    comments= (("Super", "Beautiful", "Great"), ("post", "picture"), ("!", "")), # list of comments
+    users_blacklist= ("instagram"), # users blacklisted
+```
 
 ## Installation
 
 1. Download and install python3+ on your computer
 2. `git clone` this repo or download as a ZIP and extract
 3. Install dependencies `pip install -r requirements.txt`
+
