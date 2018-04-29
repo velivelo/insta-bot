@@ -3,71 +3,42 @@ An Insagram bot made with Python and independant from the Instagram API.
 
 ## The bot can
 
-src/instabot.py > help(InstaBot) :
-```
-class InstaBot(builtins.object)
- |  Methods defined here:
- |  
- |  __init__(self, username, password)
- |      Initialize self.  See help(type(self)) for accurate signature.
- |  
- |  comment(self, media_id, text)
- |      Post a comment on a media by its id and return the comment id
- |  
- |  downloadMedia(self, media_shortcode)
- |      Download a media by its shortcode (not videos)
- |  
- |  explore(self, tag)
- |      Return the most recent posted medias containing the tag in argument
- |  
- |  follow(self, user_id)
- |      Follow an user by his id
- |  
- |  getUserDetails(self, username)
- |      Return an user details into a dictionary from his username
- |  
- |  like(self, media_id)
- |      Like a media by its id
- |  
- |  login(self)
- |      Loggin to Instagram
- |  
- |  removeComment(self, media_id, comment_id)
- |      Remove a comment from a media by its id
- |  
- |  require_loggin(func)
- |  
- |  unfollow(self, user_id)
- |      Unfollow an user by his id
- |  
- |  unlike(self, media_id)
- |      Unlike a media by its id
- |  
- |  userIdToUsername(self, user_id)
- |      From an user id to an username
- |  
- |  usernameToUserId(self, username)
- |      From an username to an user id
-```
-src/automod.py > help(InstaBot.autoMod) :
-```
-autoMod(self, follow_duration=300, time_gap=60, tags='default', unfollow_if_followed_back=True, unfollow_already_followed=False, follow=True, like=False, max_stack_size=5, videos=False, max_likes_for_like=20, max_followers_for_follow=500, only_medias_posted_before_timestamp=600, comment=False, comments=(('Super', 'Beautiful', 'Great'), ('post', 'picture'), ('!', '')), users_blacklist='instagram')
-    follow_duration= 300,                                                        # time before unfollowing (0 for infinite)
-    time_gap= 60,                                                                # time between medias treatment
-    tags= ("default"),                                                           # media tags to explore
-    unfollow_if_followed_back= True,                                             # unfollow even if the user has followed back
-    unfollow_already_followed= False,                                            # can the bot unfollow people already followed 
-    follow= True,                                                                # follow medias owners
-    like= False,                                                                 # like medias 
-    max_stack_size= 5,                                                           # maximum number of medias treated for a tag
-    videos= False,                                                               # take care of videos
-    max_likes_for_like= 20,                                                      # max likes a media can have to be liked
-    max_followers_for_follow= 500,                                               # max followers an user can have to be followed
-    only_medias_posted_before_timestamp= 600,                                    # treat only a media if posted before timestamp
-    comment= False,                                                              # comment the media
-    comments= (("Super", "Beautiful", "Great"), ("post", "picture"), ("!", "")), # list of comments
-    users_blacklist= ("instagram"),                                              # users blacklisted
-```
+### src/instabot.py > class InstaBot
+| Method | Definition | Argument(s)
+| ------ | ---------- | -----------
+| login | login to instagram | -
+| follow | follow an user | user_id
+| unfollow | unfollow an user | user_id
+| like | like a media | media_id
+| unlike | unlike a media | media_id
+| comment | post a comment (return the comment_id) | media_id, text
+| uncomment | delete a comment | media_id, comment_id
+| explore | return a list of medias | tag
+| downloadMedia | download a media | media_shortcode
+| getUserDetails | return a dictionary with the user details | username
+| usernameToUserId | return the user_id | username
+| userIdToUsername | return the username | user_id
+
+### src/automod.py > class InstaBotWithAutoMod > start method
+| Parameter | Definition | Default value
+| -------- | ---------- | -------------
+| tags | list of tags to explore | ("default")
+| follow_ratio | probability to follow a media owner | 1
+| like_ratio | probability to like a media | 1
+| comment_ratio | probability to coment a media | 0.33
+| average_time_gap | average time between each media iteration | 30
+| max_stack_size | number of medias to explore at each loop | 5
+| comments | list of sub_comment | (("Super", "Beautiful", "Great"), ("post", "picture"), ("!", ""))
+| add_to_unfollow_queue | the followed users will be unfollowed | True
+| follow_duration | time before unfollowing | 600
+| media_owner_max_followers | max followers for follow | 500
+| media_max_likes | max likes for like | 20
+| medias_posted_before_time | handle only the medias posted before time | 300
+| allow_videos | are videos handled | False
+| users_blacklist | these users won't be followed | ("user0")
+| users_whitelist | these users won't be unfollowed | ("user1")
+| start_at | starting time | datetime.time(hour= 7)
+| end_at | ending_time | datetime.time(hour= 22, minute= 30)
 
 ## Installation
 
