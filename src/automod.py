@@ -132,7 +132,7 @@ class InstaBotWithAutoMod (InstaBot):
 
 
 if __name__ == "__main__": 
-    bot = InstaBotWithAutoMod ("cdadbc", "cerise")
+    bot = InstaBotWithAutoMod ("username", "password")
     bot.login()
     bot.start(**{
                     "tags": ("draw", "drawing"),
