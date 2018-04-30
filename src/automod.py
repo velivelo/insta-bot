@@ -1,166 +1,143 @@
 
 
-from instabot import *
+import time
+from instabot import InstaBot
+import datetime
+import random
 import sys
 import pickle
 import os
-import datetime
+from requests.exceptions import *
 
 
-class GracefulKiller ():
-    kill_now = False
-
-    def __init__(self):
-        import signal
-        signal.signal(signal.SIGINT, self.exitGracefully)
-        signal.signal(signal.SIGTERM, self.exitGracefully)
-
-    def exitGracefully (self, signum, frame):
-        """Handle exits signals"""
-        self.kill_now = True
-
-    def freezeProgram (self, seconds):
-        """Acts like time.sleep(x) but return True as soon as kill_now is True"""
-        freeze_start = time.time()
-        while time.time() - freeze_start < seconds:
-            if self.kill_now:
-                return True
-        return False
-
-
+def probability (proba):
+    return random.uniform(0, 1) >= 1 - proba
 def formatedDate ():
     return time.strftime("%H:%M:%S", time.localtime())
 
 
-# All times are exprimed in seconds
-def autoMod (self, follow_duration= 300, time_gap= 60, tags= ("default"), unfollow_if_followed_back= True, unfollow_already_followed= False,
-             follow= True, like= False, max_stack_size= 5, videos= False, max_likes_for_like= 20, max_followers_for_follow= 500,
-             only_medias_posted_before_timestamp= 600, comment= False, comments= (("Super", "Beautiful", "Great"), ("post", "picture"), ("!", "")),
-             users_blacklist= ("instagram"), comment_ratio= .33, unfollow= True, start_at= datetime.datetime.now(), end_at= datetime.datetime.max,
-            ):
-    """
-    follow_duration= 300,                                                        # time before unfollowing (0 for infinite)
-    time_gap= 60,                                                                # time between medias treatment
-    tags= ("default"),                                                           # media tags to explore
-    unfollow_if_followed_back= True,                                             # unfollow even if the user has followed back
-    unfollow_already_followed= False,                                            # can the bot unfollow people already followed 
-    follow= True,                                                                # follow medias owners
-    like= False,                                                                 # like medias 
-    max_stack_size= 5,                                                           # maximum number of medias treated for a tag
-    videos= False,                                                               # take care of videos
-    max_likes_for_like= 20,                                                      # max likes a media can have to be liked
-    max_followers_for_follow= 500,                                               # max followers an user can have to be followed
-    only_medias_posted_before_timestamp= 600,                                    # treat only a media if posted before timestamp
-    comment= False,                                                              # comment the media
-    comments= (("Super", "Beautiful", "Great"), ("post", "picture"), ("!", "")), # list of comments
-    users_blacklist= ("instagram"),                                              # users blacklisted
-    comment_ratio= .33,                                                          # probability of posting a comment even if comment set to True
-    unfollow= True,                                                              # the bot add acounts to the unfollow queue after followed
-    start_at= datetime.datetime.now(),                                           # the bot start at
-    end_at= datetime.datetime.max,                                               # the bot end at
-    """
-    if datetime.datetime.now() < start_at:
-        sys.stdout("{} Waiting till its time to start\n".format(formatedDate()))
-    while datetime.datetime.now() < start_at:
-        if killer.freezeProgram(10):
-            raise KeyboardInterrupt("") 
-    try:
-        while True:
-            i = 0
-            tag = random.choice(tags)
-            medias = self.explore(tag)
-            sys.stdout.write("{} EXPLORE > medias with tag #{}, {} medias founded\n".format(formatedDate(), tag, len(medias)))
-            for media in medias:
+class InstaBotWithAutoMod (InstaBot):
 
-                # UNFOLLOW LOOP
-                for user_id, unfollow_at_time in unfollow_queue.copy().items():
-                    if time.time() > unfollow_at_time:
-                        self.unfollow(user_id)
-                        del unfollow_queue[user_id]
-                        sys.stdout.write("{} UNFOLLOW > user id : {}\n".format(formatedDate(), user_id))
-                        if killer.freezeProgram(random.uniform(time_gap * .5, time_gap * 1.5)):
-                            raise KeyboardInterrupt("")
-                        assert end_at > datetime.datetime.now()
-
-                # FOLLOW, LIKE, COMMENT LOOP
-                owner_details = self.getUserDetails(self.userIdToUsername(media["owner"]["id"]))
-                if time.time() - media["taken_at_timestamp"] > only_medias_posted_before_timestamp:
-                    break 
-                if media["is_video"] and not videos:
-                    continue
-                if owner_details["username"] in users_blacklist:
-                    continue
-                if follow:
-                    if owner_details["follows_viewer"]:
-                        continue
-                    if owner_details["edge_followed_by"]["count"] > max_followers_for_follow:
-                        continue
-                    if unfollow_already_followed and (owner_details["followed_by_viewer"] or owner_details["requested_by_viewer"]):
-                        continue
-                    self.follow(owner_details["id"])
-                    if unfollow and follow_duration:
-                        unfollow_queue[owner_details["id"]] = time.time() + follow_duration
-                    sys.stdout.write("{} FOLLOW > user : @{}\n".format(formatedDate(), owner_details["username"]))
-                if like:
-                    time.sleep(random.uniform(1, 2))
-                    if media["edge_liked_by"]["count"] > max_likes_for_like:
-                        continue
-                    self.like(media["id"])
-                    sys.stdout.write("{} LIKE > media shortcode : {}\n".format(formatedDate(), media["shortcode"]))
-                if comment and random.uniform(0, 1) >= 1 - comment_ratio:
-                    time.sleep(random.uniform(1, 2))
-                    if media["comments_disabled"]:
-                        continue
-                    comment_id = self.comment(media["id"], " ".join([random.choice(sub_comment) for sub_comment in comments]))
-                    sys.stdout.write("{} COMMENT > media shortcode : {}, comment id : {}\n".format(formatedDate(), media["shortcode"], comment_id))
-
-                i += 1
-                if i == max_stack_size:
-                    break
-                if killer.freezeProgram(random.uniform(time_gap * .5, time_gap * 1.5)):
-                    raise KeyboardInterrupt("")
-                assert end_at > datetime.datetime.now()
-    except:
-        raise
-    finally: # kind of insurance (for exemple if the computer power goes out)
-        pickle.dump(unfollow_queue, open("{}/unfollow_queue.txt".format(os.path.dirname(__file__)), "wb"))
-
-
-InstaBot.autoMod = autoMod
-
-
-if __name__ == "__main__":
-    bot = InstaBot ("keyzerd", "cerise")
-    sys.stdout.write("{} BOT INITIALIZED\n".format(formatedDate()))
-    bot.login()
-    sys.stdout.write("{} BOT LOGGED\n".format(formatedDate()))
-    
-    try:
-        unfollow_queue = pickle.load(open("{}/unfollow_queue.txt".format(os.path.dirname(__file__)), "rb"))
-    except:
-        unfollow_queue = {}
-    
-    killer = GracefulKiller()
-    freezing_time = 4
-    for i in range(10): # 10 is the maximum number of errors
+    def __init__ (self, username, password):
+        InstaBot.__init__(self, username, password)
+        self.kill_now = False
+        self._ConnectionResetErrors = 0
+        self.unfollow_queue_file_name = "{}_unfollow_queue.txt".format(self.username)
         try:
+            self.unfollow_queue = pickle.load(open("{}/{}".format(os.path.dirname(__file__), self.unfollow_queue_file_name), "rb"))
+        except:
+            self.unfollow_queue = {}
+        import signal
+        signal.signal(signal.SIGINT, self.stop)
+        signal.signal(signal.SIGTERM, self.stop)
 
-            bot.autoMod(**{
-                "time_gap": 30,
-                "tags": ["drawing", "draw"],
-                "like": True,
-                "comment": True, 
-                #"end_at": datetime.datetime(2018, 4, 27, hour=11, minute=30)
-            })
+    def stop (self, signum, frame):
+        self.kill_now = True
 
-        except (KeyboardInterrupt, AssertionError) as e:
-            sys.stdout.write("EXIT\n".format(e))
-            break
+    def sleep (self, seconds):
+        started_time = time.time()
+        while time.time() < started_time + seconds:
+            if self.kill_now:
+                raise KeyboardInterrupt
+
+    def start (self, 
+               tags= ("default"), 
+               max_stack_size= 5,
+               average_time_gap= 30,
+               follow_ratio= 1,
+               like_ratio= 1,
+               comment_ratio= .33,
+               follow_duration= 300,
+               comments= (("Super", "Beautiful", "Great"), ("post", "picture"), ("!", "")),
+               add_to_unfollow_queue= True,
+               media_owner_max_followers= 500,
+               media_max_likes= 20,
+               users_blacklist= ("user0"),
+               users_whitelist= ("user1"),
+               medias_posted_before_time= 300,
+               allow_videos= False,
+               start_at= datetime.time(hour= 10, minute= 30),
+               end_at= datetime.time(hour= 20),
+              ):
+        saved_args = locals()
+        try:
+            while start_at < datetime.time(hour= datetime.datetime.now().hour, minute= datetime.datetime.now().minute) < end_at:
+                # UNFOLLOW loop
+                for user_id, unfollow_at_time in self.unfollow_queue.copy().items():
+                    username = self.userIdToUsername(user_id)
+                    if username in users_whitelist:
+                        del self.unfollow_queue[user_id]
+                    elif time.time() > unfollow_at_time:
+                        self.unfollow(user_id)
+                        del self.unfollow_queue[user_id]
+                        sys.stdout.write("{} UNFOLLOW @{}\n".format(formatedDate(), username))
+                        self.sleep(random.uniform(average_time_gap * .5, average_time_gap * 1.5))
+                # SAVE UNFOLLOW_QUEUE (insurance for exemple if the computer power goes out)
+                pickle.dump(self.unfollow_queue, open("{}/{}".format(os.path.dirname(__file__), self.unfollow_queue_file_name), "wb"))
+                # FOLLOW, LIKE, COMMENT loop
+                for media in self.explore(random.choice(tags))[:max_stack_size]:
+                    if time.time() - media["taken_at_timestamp"] > medias_posted_before_time:
+                        break 
+                    if media["is_video"] and not allow_videos:
+                        continue
+                    media_owner = self.getUserDetails(self.userIdToUsername(media["owner"]["id"]))
+                    if media_owner["username"] in users_blacklist:
+                        continue
+                    if media_owner["follows_viewer"] or media_owner["has_requested_viewer"] or \
+                       media_owner["followed_by_viewer"] or media_owner["requested_by_viewer"]:
+                        continue
+                    if media_owner["edge_followed_by"]["count"] > media_owner_max_followers or \
+                       media["edge_liked_by"]["count"] > media_max_likes:
+                        continue
+                    if probability(follow_ratio):
+                        self.sleep(random.uniform(1, 2))
+                        self.follow(media_owner["id"])
+                        sys.stdout.write("{} FOLLOW @{}\n".format(formatedDate(), media_owner["username"]))
+                        if add_to_unfollow_queue:
+                            self.unfollow_queue[media_owner["id"]] = time.time() + follow_duration
+                    if probability(like_ratio):
+                        self.sleep(random.uniform(1, 2))
+                        self.like(media["id"])
+                        sys.stdout.write("{} LIKE media shortcode {}\n".format(formatedDate(), media["shortcode"]))
+                    if probability(comment_ratio):
+                        if media["comments_disabled"]:
+                            continue
+                        comment = " ".join([random.choice(sub_comment) for sub_comment in comments])
+                        self.sleep(random.uniform(1, 2))
+                        comment_id = self.comment(media["id"], comment)
+                        sys.stdout.write("{} COMMENT media shortcode {}, comment id {}\n".format(formatedDate(), media["shortcode"], comment_id))
+                    self.sleep(random.uniform(average_time_gap * .5, average_time_gap * 1.5))
+        except ConnectionError:
+            self.sleep(60)
+        # instagram warning
         except ConnectionResetError:
-            sys.stdout.write("Connection aborted, freezing for {} seconds".format(freezing_time))
-            killer.freezeProgram(freezing_time)
-            freezing_time *= 2
+            sys.stdout.write("{} Connection aborted, freezing for {} seconds\n".format(formatedDate(), 4 * 2 ** self._ConnectionResetErrors))
+            self.sleep(4 * 2 ** self._ConnectionResetErrors)
+        except KeyboardInterrupt:
+            sys.stdout.write("{} Exit message received\n".format(formatedDate()))
+            return
+        # account / media deleted
+        except HTTPError as e:
+            sys.stdout.write("{} {}\n".format(formatedDate(), e))
+        # bot not logged in
+        except RuntimeError:
+            raise
         except Exception as e:
-            sys.stdout.write("{}\n".format(e))
-    sys.stdout.write("{} BOT LOGGED OUT, {} users in unfollow_queue\n".format(formatedDate(), len(unfollow_queue)))
+            sys.stdout("{} Error {}".format(formatedDate(), e))
+        else:
+            self.sleep(60)
+        finally:
+            pickle.dump(self.unfollow_queue, open("{}/{}".format(os.path.dirname(__file__), self.unfollow_queue_file_name), "wb"))
+        self.start(saved_args)
 
+
+if __name__ == "__main__": 
+    bot = InstaBotWithAutoMod ("cdadbc", "cerise")
+    bot.login()
+    bot.start(**{
+                    "tags": ("draw", "drawing"),
+                    "start_at": datetime.time(),
+                    "end_at": datetime.time(hour=19, minute=15),
+                })
+
+    
