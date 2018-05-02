@@ -64,14 +64,17 @@ class InstaBotWithAutoMod (InstaBot):
             while start_at < datetime.time(hour= datetime.datetime.now().hour, minute= datetime.datetime.now().minute) < end_at:
                 # UNFOLLOW loop
                 for user_id, unfollow_at_time in self.unfollow_queue.copy().items():
-                    username = self.userIdToUsername(user_id)
-                    if username in users_whitelist:
+                    try:
+                        username = self.userIdToUsername(user_id)
+                        assert not username in users_whitelist
+                    except (AssertionError, KeyError): # in whitelist or account deleted
                         del self.unfollow_queue[user_id]
-                    elif time.time() > unfollow_at_time:
-                        self.unfollow(user_id)
-                        del self.unfollow_queue[user_id]
-                        sys.stdout.write("{} UNFOLLOW @{}\n".format(formatedDate(), username))
-                        self.sleep(random.uniform(average_time_gap * .5, average_time_gap * 1.5))
+                    else:
+                        if time.time() > unfollow_at_time:
+                            self.unfollow(user_id)
+                            del self.unfollow_queue[user_id]
+                            sys.stdout.write("{} UNFOLLOW @{}\n".format(formatedDate(), username))
+                            self.sleep(random.uniform(average_time_gap * .5, average_time_gap * 1.5))
                 # SAVE UNFOLLOW_QUEUE (insurance for exemple if the computer power goes out)
                 pickle.dump(self.unfollow_queue, open("{}/{}".format(os.path.dirname(__file__), self.unfollow_queue_file_name), "wb"))
                 # FOLLOW, LIKE, COMMENT loop
