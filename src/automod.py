@@ -84,9 +84,9 @@ class InstaBotWithAutoMod (InstaBot):
                     if media["is_video"] and not allow_videos:
                         continue
                     try:
-                   		media_owner = self.getUserDetails(self.userIdToUsername(media["owner"]["id"]))
-                   	except KeyError:
-                   		continue
+                        media_owner = self.getUserDetails(self.userIdToUsername(media["owner"]["id"]))
+                    except KeyError:
+                        continue
                     if media_owner["username"] in users_blacklist:
                         continue
                     if media_owner["follows_viewer"] or media_owner["has_requested_viewer"] or \
