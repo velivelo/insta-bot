@@ -7,7 +7,7 @@ import random
 import sys
 import pickle
 import os
-from requests.exceptions import *
+from requests.exceptions import ReadTimeout
 
 
 def probability (proba):
@@ -59,7 +59,7 @@ class InstaBotWithAutoMod (InstaBot):
                start_at= datetime.time(hour= 10, minute= 30),
                end_at= datetime.time(hour= 20),
               ):
-        saved_args = locals()
+        saved_args = {arg: value for arg, value in locals().items() if arg != "self"}
         try:
             while start_at < datetime.time(hour= datetime.datetime.now().hour, minute= datetime.datetime.now().minute) < end_at:
                 # UNFOLLOW loop
@@ -113,8 +113,9 @@ class InstaBotWithAutoMod (InstaBot):
                         comment_id = self.comment(media["id"], comment)
                         sys.stdout.write("{} COMMENT media shortcode {}, comment id {}\n".format(formatedDate(), media["shortcode"], comment_id))
                     self.sleep(random.uniform(average_time_gap * .5, average_time_gap * 1.5))
-        except ConnectionError:
-            self.sleep(60)
+        except (ConnectionError, ReadTimeout):
+            sys.stdout.write("{} Connection error, freezing for 15 seconds\n".format(formatedDate()))
+            self.sleep(15)
         # instagram warning
         except ConnectionResetError:
             sys.stdout.write("{} Connection aborted, freezing for {} seconds\n".format(formatedDate(), 4 * 2 ** self._ConnectionResetErrors))
@@ -122,19 +123,16 @@ class InstaBotWithAutoMod (InstaBot):
         except KeyboardInterrupt:
             sys.stdout.write("{} Exit message received\n".format(formatedDate()))
             return
-        # account / media deleted
-        except HTTPError as e:
-            sys.stdout.write("{} {}\n".format(formatedDate(), e))
         # bot not logged in
         except RuntimeError:
             raise
         except Exception as e:
-            sys.stdout("{} Error {}".format(formatedDate(), e))
+            sys.stdout.write("{} Error {}\n".format(formatedDate(), e))
         else:
             self.sleep(60)
         finally:
             pickle.dump(self.unfollow_queue, open("{}/{}".format(os.path.dirname(__file__), self.unfollow_queue_file_name), "wb"))
-        self.start(saved_args)
+        self.start(**saved_args)
 
 
 if __name__ == "__main__": 
@@ -143,7 +141,7 @@ if __name__ == "__main__":
     bot.start(**{
                     "tags": ("draw", "drawing"),
                     "start_at": datetime.time(),
-                    "end_at": datetime.time(hour=19, minute=15),
+                    "end_at": datetime.time(hour=19, minute=50),
                 })
 
     
