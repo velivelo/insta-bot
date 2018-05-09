@@ -57,7 +57,7 @@ class InstaBotWithAutoMod (InstaBot):
                 raise KeyboardInterrupt
 
     def waitTillStartTime (self, gap_time= 30):
-        while dtime(hour= ddtime.now().hour, minute= ddtime.now().minute) < self.start_at:
+        while not (self.start_at < dtime(hour= ddtime.now().hour, minute= ddtime.now().minute) < self.end_at):
             self.sleep(gap_time)
 
     def login (self, username, password):
@@ -128,8 +128,8 @@ class InstaBotWithAutoMod (InstaBot):
             self.sleep()
 
     def start (self):
-        self.waitTillStartTime()
         try:
+            self.waitTillStartTime()
             self.mainLoop()
         except (ConnectionError, ReadTimeout):
             sys.stdout.write("{} Connection error, freezing for 15 seconds\n".format(formatedDate()))
@@ -153,11 +153,11 @@ class InstaBotWithAutoMod (InstaBot):
 
 if __name__ == "__main__":
     bot = InstaBotWithAutoMod (
-                               start_at= dtime(hour= 7, minute= 30), 
+                               start_at= dtime(hour= 23, minute= 7), 
                                tags= ("draw", "drawing"),
-                               end_at= dtime(hour= 22),
+                               end_at= dtime(hour= 23, minute= 12),
                               )
     bot.login("username", "password")
     bot.start()
-
+    
     
