@@ -37,8 +37,8 @@ An Insagram bot made with Python and independant from the Instagram API.
 | allow_videos | are videos handled | False
 | users_blacklist | these users won't be followed | ("user0")
 | users_whitelist | these users won't be unfollowed | ("user1")
-| start_at | starting time | datetime.time(hour= 7)
-| end_at | ending_time | datetime.time(hour= 22, minute= 30)
+| start_at | starting time | dtime(hour= 7)
+| end_at | ending_time | dtime(hour= 22, minute= 30)
 
 ## Installation
 
