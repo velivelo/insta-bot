@@ -1,6 +1,6 @@
 
 
-from instabotV2 import InstaBot, LoginError
+from instabot import InstaBot, LoginError
 from requests.exceptions import ConnectionError, ReadTimeout
 from datetime import time as dtime, datetime as ddtime
 from time import time, strftime, localtime
