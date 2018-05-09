@@ -1,17 +1,20 @@
 
 
-import time
-import random
 import requests
-from fake_useragent import UserAgent
-import re
-import json
+from time import sleep
+from random import uniform
 from functools import wraps
-import os
+from fake_useragent import UserAgent
+from re import search
+from os import makedirs
+from json import loads as jloads
+
+
+class LoginError (Exception):
+    pass
 
 
 class InstaBot ():
-
     urls = {
         "default": "https://www.instagram.com/",
         "login": "https://www.instagram.com/accounts/login/ajax/",
@@ -27,21 +30,19 @@ class InstaBot ():
         "media": "https://www.instagram.com/p/{}/", # media shortcode
     }
 
-    def __init__ (self, username, password):
-        self.username, self.password = username, password
-
-        self.s = requests.Session()
+    def __init__ (self):
         self.logged = False
+        self.s = requests.Session()
 
     def require_loggin (func):
         @wraps(func)
         def wrapper (*args, **kwargs):
             if not args[0].logged:
-                raise Exception('Method "{}" require the bot to be logged'.format(func.__name__))
+                raise LoginError('Method "{}" require the bot to be logged'.format(func.__name__))
             return func(*args, **kwargs)
         return wrapper 
 
-    def login (self):
+    def login (self, username, password):
         """Loggin to Instagram"""
         self.s.headers.update({
             'Accept': '*/*',
@@ -53,28 +54,24 @@ class InstaBot ():
             'Referer': 'https://www.instagram.com/',
             'User-Agent': UserAgent().random,
         })
-    
         r = self.s.get(self.urls["default"], timeout= 5)
         self.s.headers.update({'X-CSRFToken': r.cookies['csrftoken']})
-        time.sleep(random.uniform(1, 2))
-
+        sleep(uniform(1, 2))
         r = self.s.post(self.urls["login"], data= {
-                                                "username": self.username,
-                                                "password": self.password,
+                                                "username": username,
+                                                "password": password,
                                             }, timeout= 5)
         self.s.headers.update({'X-CSRFToken': r.cookies['csrftoken']})
         self.s.cookies['ig_vw'] = '1536'
         self.s.cookies['ig_pr'] = '1.25'
         self.s.cookies['ig_vh'] = '772'
         self.s.cookies['ig_or'] = 'landscape-primary'
-        if r.status_code != 200:
-            raise Exception("Login error. Connection Error.")
-        time.sleep(random.uniform(1, 2))
-
+        sleep(uniform(1, 2))
         r = self.s.get(self.urls["default"], timeout= 5)
-        if r.text.find(self.username) < 0:
-            raise Exception("Login error. Check login data.")
+        if r.text.find("not-logged-in") > 0:
+            raise LoginError("Login error. Check login data.")
         self.logged = True
+        self.username, self.password = username, password
 
     @require_loggin
     def follow (self, user_id):
@@ -121,7 +118,7 @@ class InstaBot ():
         """Return an user details into a dictionary from his username"""
         r = self.s.get(self.urls["user_details"].format(username), timeout= 5)
         r.raise_for_status()
-        full_details = json.loads(re.search(r"window\._sharedData = (.+);</script>", r.text).group(1))
+        full_details = jloads(search(r"window\._sharedData = (.+);</script>", r.text).group(1))
         return full_details["entry_data"]["ProfilePage"][0]["graphql"]["user"]
 
     def usernameToUserId (self, username):
@@ -137,16 +134,16 @@ class InstaBot ():
         """Return the most recent posted medias containing the tag in argument"""
         r = self.s.get(self.urls["explore"].format(tag), timeout= 5)
         if r.status_code != 200: 
-            return [] # no madia with this tag
+            return [] # no media with this tag
         return [media["node"] for media in r.json()["graphql"]["hashtag"]["edge_hashtag_to_media"]["edges"]]
 
     def downloadMedia (self, media_shortcode):
         """Download a media by its shortcode (not videos)"""
         r = self.s.get(self.urls["media"].format(media_shortcode), timeout= 5)
-        full_details = json.loads(re.search(r"window\._sharedData = (.+);</script>", r.text).group(1))
+        full_details = jloads(search(r"window\._sharedData = (.+);</script>", r.text).group(1))
         media_url = full_details["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["display_url"]
         img_data = requests.get(media_url, timeout= 10).content
-        os.makedirs("downloads", exist_ok= True)
+        makedirs("downloads", exist_ok= True)
         with open("downloads/{}.jpg".format(media_shortcode), "wb") as handler:
             handler.write(img_data)
 
