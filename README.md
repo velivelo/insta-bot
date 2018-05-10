@@ -19,7 +19,7 @@ An Insagram bot made with Python and independant from the Instagram API.
 | usernameToUserId | return the user_id | username
 | userIdToUsername | return the username | user_id
 
-### src/automod.py > class InstaBotWithAutoMod > start method
+### src/automod.py > class InstaBotWithAutoMod 
 | Parameter | Definition | Default value
 | -------- | ---------- | -------------
 | tags | list of tags to explore | ("default")
