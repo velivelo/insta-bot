@@ -62,7 +62,7 @@ class InstaBotWithAutoMod (InstaBot):
 
     def login (self, username, password):
         super().login(username, password)
-        self.unfollow_queue_dir = path.join(path.dirname(__file__), "data", "{}-unfollow-queue.txt".format(self.username))
+        self.unfollow_queue_dir = path.join(path.dirname(__file__), "data", "{}_unfollow_queue.txt".format(self.username))
         self.loadUnfollowQueue()
 
     def loadUnfollowQueue (self):
